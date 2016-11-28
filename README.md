@@ -13,7 +13,7 @@ gem "lita-announce"
 ## Usage
 
     @lita announce to <channels> <content>
-    @lita announce to group:<groups> <content>
+    @lita announce to <groups> <content>
     @lita announce list-groups
     @lita announce add-group <name> <channels>
     @lita announce mod-group <name> <channels>
