@@ -23,7 +23,7 @@ describe Lita::Handlers::Announce, lita_handler: true do
   end
 
   describe "list-groups" do
-    before { subject.redis.set("group:network", { channels: network_group }.to_json) }
+    before { subject.redis.set("group:network", MultiJson.dump({ channels: network_group })) }
 
     it "returns a list of groups" do
       send_command("announce list-groups")
@@ -34,7 +34,7 @@ describe Lita::Handlers::Announce, lita_handler: true do
   shared_examples_for "group channel modification validation" do
     it "adds group to redis" do
       send_command(command)
-      expect(subject.redis.get("group:premium")).to eql({ channels: premium_group }.to_json)
+      expect(subject.redis.get("group:premium")).to eql(MultiJson.dump({ channels: premium_group }))
       expect(replies.last).to eql(":successful: Announcement group 'premium' updated! Will send messages to #{premium_group.map { |c| "##{c}" }.join(", ")}")
     end
 
@@ -80,7 +80,7 @@ describe Lita::Handlers::Announce, lita_handler: true do
     let(:command) { "announce mod-group #{group} #{channels}" }
 
     before do
-      subject.redis.set("group:premium", { channels: premium_group }.to_json)
+      subject.redis.set("group:premium", MultiJson.dump({ channels: premium_group }))
       Lita::Room.create_or_update("starz")
     end
 
@@ -91,7 +91,7 @@ describe Lita::Handlers::Announce, lita_handler: true do
     let(:group) { "premium" }
     let(:command) { "announce del-group #{group}" }
 
-    before { subject.redis.set("group:premium", { channels: premium_group }.to_json) }
+    before { subject.redis.set("group:premium", MultiJson.dump({ channels: premium_group })) }
 
     it "deletes group from redis" do
       send_command(command)
@@ -122,9 +122,9 @@ describe Lita::Handlers::Announce, lita_handler: true do
     end
 
     before do
-      subject.redis.set("group:premium", { channels: premium_group }.to_json)
-      subject.redis.set("group:network", { channels: network_group }.to_json)
-      subject.redis.set("group:my_favorites", { channels: my_favorites }.to_json)
+      subject.redis.set("group:premium", MultiJson.dump({ channels: premium_group }))
+      subject.redis.set("group:network", MultiJson.dump({ channels: network_group }))
+      subject.redis.set("group:my_favorites", MultiJson.dump({ channels: my_favorites }))
     end
 
     shared_examples_for "an announcement" do

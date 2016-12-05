@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 
-require "json"
 require "time"
 
 module Lita
@@ -73,7 +72,7 @@ module Lita
         results = []
         redis.scan_each do |key|
           if key =~ /^group:(\w+)$/
-            channels = JSON.parse(redis.get(key))["channels"]
+            channels = MultiJson.load(redis.get(key))["channels"]
             results << "*#{$1}*: #{channels.map { |c| "\##{c}" }.join(", ")}"
           end
         end
@@ -105,7 +104,7 @@ module Lita
         end
         return unless all_channels_exist
 
-        redis.set("group:#{group}", { channels: channel_array }.to_json)
+        redis.set("group:#{group}", MultiJson.dump({ channels: channel_array }))
         response.reply(":successful: Announcement group '#{group}' updated! Will send messages to #{channel_array.map { |c| "\##{c}" }.join(", ")}")
       end
 
@@ -154,7 +153,7 @@ module Lita
       end
 
       def save_announcement(payload)
-        redis.lpush("announcements", payload.to_json)
+        redis.lpush("announcements", MultiJson.dump(payload))
         redis.ltrim("announcements", 0, config.announcements_to_keep - 1)
       end
 
@@ -169,17 +168,10 @@ module Lita
         if target =~ /^group:(\w+)$/
           group = redis.get(target)
           return nil if group.nil?
-          JSON.parse(group)["channels"]
+          MultiJson.load(group)["channels"]
         else
           [target]
         end
-      end
-
-      def attachment_for(payload)
-        options = {
-
-        }
-        Lita::Adapters::Slack::Attachment.new(payload[:message], options)
       end
 
       Lita.register_handler(self)
