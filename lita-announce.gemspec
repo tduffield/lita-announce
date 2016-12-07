@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name          = "lita-announce"
-  spec.version       = "0.1.1"
+  spec.version       = "0.1.2"
   spec.authors       = ["Tom Duffield"]
   spec.email         = ["tom@chef.io"]
   spec.description   = "Lita plugin to make announcements across multiple channels."
