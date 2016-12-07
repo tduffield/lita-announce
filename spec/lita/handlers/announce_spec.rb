@@ -135,6 +135,9 @@ describe Lita::Handlers::Announce, lita_handler: true do
       end
 
       it "sends message" do
+        payload[:channels].each do |channel|
+          expect(robot).to receive(:join).with(Lita::Room.fuzzy_find(channel))
+        end
         send_command(command)
         expect(replies.length).to eql(payload[:channels].length)
         expect(replies.last).to eql(expected_message)
