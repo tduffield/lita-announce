@@ -159,8 +159,9 @@ module Lita
 
       def make_announcement_to_channels(payload)
         payload[:channels].each do |c|
-          channel = Lita::Source.new(room: Lita::Room.fuzzy_find(c))
-          robot.send_message(channel, "#{payload[:text]} - #{payload[:author]}")
+          room = Lita::Room.fuzzy_find(c)
+          robot.join(room)
+          robot.send_message(Lita::Source.new(room: room), "#{payload[:text]} - #{payload[:author]}")
         end
       end
 
