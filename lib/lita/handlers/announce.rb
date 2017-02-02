@@ -21,6 +21,8 @@ module Lita
   module Handlers
     class Announce < Handler
 
+      class PostMessageException < RuntimeError; end
+
       config :announcements_to_keep, default: 10
 
       route(
@@ -135,6 +137,13 @@ module Lita
 
         save_announcement(payload)
         make_announcement_to_channels(payload)
+      rescue PostMessageException => e
+        message = <<-RESPONSE
+I'm sorry, but I could not post your message to the following rooms: #{e.message}.
+
+Please ensure that #{robot.mention_name} is present in those rooms, and that those rooms still exist and have not been archived or deleted.
+        RESPONSE
+        response.reply(message)
       end
 
       def parse_channels(targets)
@@ -158,11 +167,18 @@ module Lita
       end
 
       def make_announcement_to_channels(payload)
+        invalid_rooms = []
         payload[:channels].each do |c|
-          room = Lita::Room.fuzzy_find(c)
-          robot.join(room)
-          robot.send_message(Lita::Source.new(room: room), "#{payload[:text]} - #{payload[:author]}")
+          begin
+            room = Lita::Room.fuzzy_find(c)
+            robot.send_message(Lita::Source.new(room: room), "#{payload[:text]} - #{payload[:author]}")
+            log.debug("Message successfully posted to #{c}")
+          rescue Exception => e
+            log.error("Could not post message to #{c} - #{e}")
+            invalid_rooms << c
+          end
         end
+        raise PostMessageException, invalid_rooms.join(", ") unless invalid_rooms.empty?
       end
 
       def parse_target(target)
