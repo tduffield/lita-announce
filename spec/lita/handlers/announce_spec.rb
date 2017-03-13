@@ -135,9 +135,6 @@ describe Lita::Handlers::Announce, lita_handler: true do
       end
 
       it "sends message" do
-        payload[:channels].each do |channel|
-          expect(robot).to receive(:join).with(Lita::Room.fuzzy_find(channel))
-        end
         send_command(command)
         expect(replies.length).to eql(payload[:channels].length)
         expect(replies.last).to eql(expected_message)
@@ -177,6 +174,15 @@ describe Lita::Handlers::Announce, lita_handler: true do
       let(:expected_channels) { premium_group.concat(%w{fox cbs}) }
 
       it_behaves_like "an announcement"
+    end
+
+    context "when the message fails to post" do
+      let(:targets) { "usa" }
+
+      it "alerts the user" do
+        send_command(command)
+        expect(replies.last).to match(/could not post your message/)
+      end
     end
   end
 end
