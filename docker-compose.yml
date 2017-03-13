@@ -1,0 +1,15 @@
+version: '3'
+services:
+  lita:
+    build: .
+    links:
+      - redis:redis
+    volumes:
+      # Sync all the local code to the app directory
+      - ./:/app
+      # Since we are syncing the whole directory, we need to make sure our local `.bundle` directory is not over-written
+      - ./.docker_bundle:/app/.bundle
+    environment:
+      - SLACK_TOKEN
+  redis:
+    image: redis

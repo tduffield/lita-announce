@@ -1,0 +1,7 @@
+#!/bin/bash
+# This file is intended for use only in the Docker environment. If you wish to run Expeditor locally, please run
+#   bundle exec lita
+
+bundle install --path /var/bundle --jobs $(nproc) --clean
+
+exec bundle exec guard
